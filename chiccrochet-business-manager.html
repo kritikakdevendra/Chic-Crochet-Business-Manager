@@ -1,0 +1,816 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chiccrochet · Business Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --green-900:#12341F;
+  --green-800:#1B5E3A;
+  --green-600:#2E8B57;
+  --green-500:#3FA96B;
+  --green-200:#BFE3CC;
+  --green-100:#DFF2E6;
+  --green-50:#F1F9F4;
+  --white:#FFFFFF;
+  --ink:#1D2A22;
+  --muted:#6B7F72;
+  --line:#DDEDE3;
+  --danger:#B3453B;
+  --warn:#A9761C;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(18,52,31,.04), 0 8px 24px -12px rgba(18,52,31,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Karla',ui-sans-serif,sans-serif;
+  color:var(--ink);
+  background:var(--green-50);
+  background-image:
+    radial-gradient(900px 500px at 100% -10%, #E6F5EC 0%, transparent 60%),
+    radial-gradient(700px 400px at -10% 110%, #EAF7EF 0%, transparent 60%);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.01em}
+
+/* ---------- GATE (setup / login) ---------- */
+#gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate-card{
+  width:100%;max-width:430px;background:var(--white);border:1px solid var(--line);
+  border-radius:22px;padding:38px 34px;box-shadow:var(--shadow);
+  animation:rise .5s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.logo-mark{
+  width:52px;height:52px;border-radius:16px;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--green-500),var(--green-800));
+  color:#fff;font-family:'Fraunces',serif;font-size:24px;margin-bottom:18px;
+}
+.gate-card h1{font-size:28px;margin-bottom:6px}
+.gate-card .sub{color:var(--muted);font-size:14.5px;margin-bottom:26px;line-height:1.55}
+
+label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green-800);margin:0 0 6px}
+input,select,textarea{
+  width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+  padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--white);
+  transition:border-color .15s, box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green-500);box-shadow:0 0 0 3px var(--green-100)}
+.field{margin-bottom:16px}
+textarea{resize:vertical;min-height:70px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+  padding:11px 20px;border-radius:10px;border:1px solid transparent;
+  background:var(--green-800);color:#fff;transition:transform .12s, background .15s, box-shadow .15s;
+}
+.btn:hover{background:var(--green-900);transform:translateY(-1px)}
+.btn:active{transform:none}
+.btn.full{width:100%}
+.btn.ghost{background:var(--white);color:var(--green-800);border-color:var(--green-200)}
+.btn.ghost:hover{background:var(--green-50)}
+.btn.sm{padding:7px 13px;font-size:13.5px;border-radius:8px}
+.btn.danger{background:var(--white);color:var(--danger);border-color:#EED9D6}
+.btn.danger:hover{background:#FCF3F2}
+
+.msg{font-size:13.5px;margin-top:12px;padding:10px 12px;border-radius:9px;display:none}
+.msg.err{display:block;background:#FCF3F2;color:var(--danger);border:1px solid #EED9D6}
+.msg.ok{display:block;background:var(--green-100);color:var(--green-800);border:1px solid var(--green-200)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.5}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;min-height:100vh}
+.topbar{
+  background:var(--white);border-bottom:1px solid var(--line);
+  padding:12px 22px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:40;
+}
+.topbar .mark{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(150deg,var(--green-500),var(--green-800));color:#fff;font-family:'Fraunces',serif;font-size:17px}
+.brand{line-height:1.15}
+.brand b{font-family:'Fraunces',serif;font-size:19px;display:block}
+.brand span{font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.topbar .spacer{flex:1}
+.who{font-size:13px;color:var(--muted);margin-right:4px}
+
+nav.tabs{
+  background:var(--white);border-bottom:1px solid var(--line);
+  padding:0 14px;display:flex;gap:2px;overflow-x:auto;position:sticky;top:61px;z-index:30;
+}
+nav.tabs button{
+  font-family:inherit;font-size:14px;font-weight:600;color:var(--muted);
+  background:none;border:none;border-bottom:2.5px solid transparent;
+  padding:13px 15px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;
+}
+nav.tabs button:hover{color:var(--green-800)}
+nav.tabs button.active{color:var(--green-800);border-bottom-color:var(--green-600)}
+
+main{max-width:1180px;margin:0 auto;padding:26px 22px 80px}
+.page{display:none;animation:fade .3s ease both}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.page-head h2{font-size:26px}
+.page-head p{color:var(--muted);font-size:14px;margin-top:3px}
+.page-head .spacer{flex:1}
+
+/* ---------- CARDS / STATS ---------- */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px}
+.stat{
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.stat:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--green-500)}
+.stat.hero:before{background:var(--green-800)}
+.stat.out:before{background:var(--danger)}
+.stat.pend:before{background:var(--warn)}
+.stat .k{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-family:'Fraunces',serif;font-size:27px;margin-top:7px;letter-spacing:-.02em}
+.stat .n{font-size:12.5px;color:var(--muted);margin-top:4px}
+.stat.hero{background:linear-gradient(140deg,var(--green-800),var(--green-900));border-color:var(--green-900)}
+.stat.hero .k{color:var(--green-200)}
+.stat.hero .v{color:#fff;font-size:33px}
+.stat.hero .n{color:var(--green-200)}
+
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+.card-head{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:var(--green-50)}
+.card-head h3{font-size:17px}
+.card-head .spacer{flex:1}
+.card-body{padding:18px}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.form-grid .wide{grid-column:1/-1}
+.form-actions{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* ---------- TABLES ---------- */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{
+  text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--green-800);background:var(--green-50);padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+td{padding:12px 14px;border-bottom:1px solid #EEF6F1;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#FAFDFB}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px}
+.empty b{display:block;font-family:'Fraunces',serif;font-size:17px;color:var(--ink);margin-bottom:5px}
+
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.pill.pending{background:#FBF2DF;color:var(--warn)}
+.pill.progress{background:var(--green-100);color:var(--green-800)}
+.pill.done{background:var(--green-600);color:#fff}
+.pill.cancel{background:#F5E9E7;color:var(--danger)}
+.pill.tag{background:var(--green-50);color:var(--green-800);border:1px solid var(--line);font-weight:600}
+.sub-line{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.act{display:flex;gap:6px;justify-content:flex-end}
+.link-btn{background:none;border:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--green-700,#2E8B57);cursor:pointer;padding:4px 6px;border-radius:6px}
+.link-btn:hover{background:var(--green-50)}
+.link-btn.del{color:var(--danger)}
+.link-btn.del:hover{background:#FCF3F2}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filters input,.filters select{width:auto;min-width:150px;padding:8px 11px;font-size:14px}
+
+/* ---------- MODAL ---------- */
+#modal{position:fixed;inset:0;background:rgba(18,52,31,.42);display:none;place-items:center;padding:20px;z-index:100;backdrop-filter:blur(3px)}
+#modal.on{display:grid}
+.modal-card{background:#fff;border-radius:18px;width:100%;max-width:430px;padding:26px;box-shadow:0 24px 60px -20px rgba(18,52,31,.5);animation:rise .28s ease both}
+.modal-card h3{font-size:21px;margin-bottom:6px}
+.modal-card .sub{color:var(--muted);font-size:13.5px;margin-bottom:18px;line-height:1.5}
+
+.bar{height:9px;border-radius:99px;background:var(--green-100);overflow:hidden;margin-top:9px}
+.bar > i{display:block;height:100%;background:var(--green-600);border-radius:99px;transition:width .5s ease}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.two-col{grid-template-columns:1fr}}
+.mini-list{list-style:none}
+.mini-list li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #EEF6F1;font-size:14px}
+.mini-list li:last-child{border-bottom:none}
+.mini-list b{font-variant-numeric:tabular-nums}
+footer.note{text-align:center;font-size:12.5px;color:var(--muted);padding:0 20px 40px}
+</style>
+
+<!-- ============ GATE ============ -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="logo-mark">C</div>
+    <h1 id="gateTitle">Loading…</h1>
+    <p class="sub" id="gateSub">Please wait</p>
+    <div id="gateForm"></div>
+    <div class="msg" id="gateMsg"></div>
+    <p class="hint" id="gateHint"></p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <header class="topbar">
+    <div class="mark">C</div>
+    <div class="brand"><b>Chiccrochet</b><span>Handmade Crochet</span></div>
+    <div class="spacer"></div>
+    <span class="who" id="whoAmI"></span>
+    <button class="btn ghost sm" onclick="openBackup()">Backup</button>
+    <button class="btn ghost sm" onclick="openChangePw()">Password</button>
+    <button class="btn sm" onclick="logout()">Logout</button>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dash">
+      <div class="page-head">
+        <div><h2>Business Amount</h2><p>Sab records ka live summary. Har entry yahan auto update hoti hai.</p></div>
+      </div>
+      <div class="stat-grid" id="dashStats"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head"><h3>Money Flow</h3></div>
+          <div class="card-body"><ul class="mini-list" id="flowList"></ul></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Orders Snapshot</h3></div>
+          <div class="card-body"><ul class="mini-list" id="orderSnap"></ul></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Recent Activity</h3></div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Details</th><th class="num">Amount</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section class="page" id="page-orders">
+      <div class="page-head">
+        <div><h2>Customer Records &amp; Orders</h2><p>Order details, customization, address aur payment status.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>New Order</h3><div class="spacer"></div><button class="btn ghost sm" onclick="toggleForm('orderForm',this)">Hide</button></div>
+        <div class="card-body" id="orderForm">
+          <div class="form-grid">
+            <div><label>Order Date</label><input type="date" id="o_date"></div>
+            <div><label>Customer Name</label><input id="o_name" placeholder="e.g. Priya Shah"></div>
+            <div><label>Contact Number</label><input id="o_contact" placeholder="10 digit mobile"></div>
+            <div class="wide"><label>Delivery Address</label><textarea id="o_address" placeholder="Full address with pincode"></textarea></div>
+            <div><label>Product / Bag Type</label><input id="o_product" placeholder="e.g. Tote bag, Sling bag"></div>
+            <div><label>Material</label><select id="o_material"><option>Cotton</option><option>Polyester</option><option>Cotton + Polyester</option></select></div>
+            <div><label>Colour</label><input id="o_colour" placeholder="e.g. Beige + Rust"></div>
+            <div><label>Size</label><input id="o_size" placeholder="e.g. 12x10 inch / Medium"></div>
+            <div><label>Occasion</label><select id="o_occasion"><option>Daily Use</option><option>Wedding</option><option>Party</option><option>Festival</option><option>Gifting</option><option>Office</option><option>Bridal</option><option>Other</option></select></div>
+            <div><label>Customization</label><select id="o_customflag"><option>No</option><option>Yes</option></select></div>
+            <div class="wide"><label>Customization / Special Notes</label><textarea id="o_notes" placeholder="Name embroidery, extra pocket, lining colour etc."></textarea></div>
+            <div><label>Price Range Quoted</label><input id="o_range" placeholder="e.g. ₹800 - ₹1200"></div>
+            <div><label>Final Price (₹)</label><input type="number" id="o_price" placeholder="0"></div>
+            <div><label>Advance Received (₹)</label><input type="number" id="o_adv" placeholder="0"></div>
+            <div><label>Delivery Date</label><input type="date" id="o_ddate"></div>
+            <div><label>Status</label><select id="o_status"><option>Pending</option><option>In Progress</option><option>Delivered</option><option>Cancelled</option></select></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn" onclick="addOrder()">Save Order</button>
+            <button class="btn ghost" onclick="clearOrderForm()">Clear</button>
+            <span class="hint" style="margin:0">Advance amount automatically Income me add ho jayega.</span>
+          </div>
+        </div>
+      </div>
+      <div class="filters">
+        <input id="f_order" placeholder="Search name, contact, colour…" oninput="renderOrders()">
+        <select id="f_ostatus" onchange="renderOrders()"><option value="">All Status</option><option>Pending</option><option>In Progress</option><option>Delivered</option><option>Cancelled</option></select>
+        <button class="btn ghost sm" onclick="exportCSV('orders')">Export CSV</button>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Customer</th><th>Product Details</th><th>Status</th><th class="num">Price</th><th class="num">Received</th><th class="num">Balance</th><th></th></tr></thead>
+        <tbody id="ordersBody"></tbody></table></div></div>
+    </section>
+
+    <!-- INCOME -->
+    <section class="page" id="page-income">
+      <div class="page-head"><div><h2>Income Records</h2><p>Order payments (auto) + koi bhi doosri income.</p></div></div>
+      <div class="card">
+        <div class="card-head"><h3>Add Other Income</h3><div class="spacer"></div><button class="btn ghost sm" onclick="toggleForm('incForm',this)">Hide</button></div>
+        <div class="card-body" id="incForm">
+          <div class="form-grid">
+            <div><label>Date</label><input type="date" id="i_date"></div>
+            <div><label>Source / From</label><input id="i_from" placeholder="e.g. Exhibition sale, Workshop"></div>
+            <div><label>Amount (₹)</label><input type="number" id="i_amt" placeholder="0"></div>
+            <div><label>Payment Mode</label><select id="i_mode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Other</option></select></div>
+            <div class="wide"><label>Note</label><input id="i_note" placeholder="Optional"></div>
+          </div>
+          <div class="form-actions"><button class="btn" onclick="addIncome()">Save Income</button></div>
+        </div>
+      </div>
+      <div class="filters">
+        <input id="f_inc" placeholder="Search income…" oninput="renderIncome()">
+        <button class="btn ghost sm" onclick="exportCSV('income')">Export CSV</button>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Source</th><th>Type</th><th>Mode</th><th class="num">Amount</th><th></th></tr></thead>
+        <tbody id="incomeBody"></tbody></table></div></div>
+    </section>
+
+    <!-- PURCHASE -->
+    <section class="page" id="page-purchase">
+      <div class="page-head"><div><h2>Raw Material Purchase</h2><p>Yarn, hooks, lining, zip, handles jo bhi bag banane ke liye kharida.</p></div></div>
+      <div class="card">
+        <div class="card-head"><h3>New Purchase</h3><div class="spacer"></div><button class="btn ghost sm" onclick="toggleForm('purForm',this)">Hide</button></div>
+        <div class="card-body" id="purForm">
+          <div class="form-grid">
+            <div><label>Date</label><input type="date" id="p_date"></div>
+            <div><label>Item</label><input id="p_item" placeholder="e.g. Cotton yarn, Zip, Handle"></div>
+            <div><label>Material Type</label><select id="p_material"><option>Cotton</option><option>Polyester</option><option>Accessory</option><option>Packaging</option><option>Other</option></select></div>
+            <div><label>Colour</label><input id="p_colour" placeholder="e.g. Off white"></div>
+            <div><label>Quantity</label><input type="number" id="p_qty" placeholder="0" step="any"></div>
+            <div><label>Unit</label><select id="p_unit"><option>Rolls</option><option>Kg</option><option>Grams</option><option>Meters</option><option>Pieces</option></select></div>
+            <div><label>Supplier / Shop</label><input id="p_supplier" placeholder="Shop name"></div>
+            <div><label>Total Amount (₹)</label><input type="number" id="p_amt" placeholder="0"></div>
+            <div><label>Payment Mode</label><select id="p_mode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Other</option></select></div>
+          </div>
+          <div class="form-actions"><button class="btn" onclick="addPurchase()">Save Purchase</button>
+          <span class="hint" style="margin:0">Ye amount business balance se automatically minus hoga.</span></div>
+        </div>
+      </div>
+      <div class="filters">
+        <input id="f_pur" placeholder="Search item, supplier, colour…" oninput="renderPurchase()">
+        <button class="btn ghost sm" onclick="exportCSV('purchases')">Export CSV</button>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Item</th><th>Type / Colour</th><th class="num">Qty</th><th>Supplier</th><th class="num">Amount</th><th></th></tr></thead>
+        <tbody id="purchaseBody"></tbody></table></div></div>
+    </section>
+
+    <!-- EXPENSE -->
+    <section class="page" id="page-expense">
+      <div class="page-head"><div><h2>Expense Records</h2><p>Raw material chhod ke baaki sab kharcha: courier, ads, packaging, tools.</p></div></div>
+      <div class="card">
+        <div class="card-head"><h3>New Expense</h3><div class="spacer"></div><button class="btn ghost sm" onclick="toggleForm('expForm',this)">Hide</button></div>
+        <div class="card-body" id="expForm">
+          <div class="form-grid">
+            <div><label>Date</label><input type="date" id="e_date"></div>
+            <div><label>Category</label><select id="e_cat">
+              <option>Courier / Delivery</option><option>Packaging</option><option>Marketing / Ads</option>
+              <option>Tools &amp; Equipment</option><option>Travel</option><option>Internet / Phone</option>
+              <option>Exhibition / Stall</option><option>Personal Withdrawal</option><option>Other</option></select></div>
+            <div><label>Amount (₹)</label><input type="number" id="e_amt" placeholder="0"></div>
+            <div><label>Payment Mode</label><select id="e_mode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Other</option></select></div>
+            <div class="wide"><label>Description</label><input id="e_desc" placeholder="Kis cheez ka kharcha"></div>
+          </div>
+          <div class="form-actions"><button class="btn" onclick="addExpense()">Save Expense</button></div>
+        </div>
+      </div>
+      <div class="filters">
+        <input id="f_exp" placeholder="Search expense…" oninput="renderExpense()">
+        <select id="f_ecat" onchange="renderExpense()"><option value="">All Categories</option></select>
+        <button class="btn ghost sm" onclick="exportCSV('expenses')">Export CSV</button>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Mode</th><th class="num">Amount</th><th></th></tr></thead>
+        <tbody id="expenseBody"></tbody></table></div></div>
+    </section>
+  </main>
+
+  <footer class="note">Chiccrochet Business Manager · Data sirf aapke browser/account me save hota hai. Hafte me ek baar Backup zaroor lein.</footer>
+</div>
+
+<div id="modal"><div class="modal-card" id="modalCard"></div></div>
+
+<script>
+/* ================= STORAGE ADAPTER ================= */
+const hasWS = typeof window.storage !== 'undefined' && window.storage;
+const DB = {
+  async get(k){
+    if(hasWS){ try{ const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; }catch(e){ return null; } }
+    try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  },
+  async set(k,v){
+    if(hasWS){ try{ await window.storage.set(k, JSON.stringify(v)); return true; }catch(e){ alert('Save failed. Try again.'); return false; } }
+    try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ alert('Save failed.'); return false; }
+  }
+};
+const K_AUTH = 'chic:auth', K_DATA = 'chic:data';
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '₹' + Math.round(num(n)).toLocaleString('en-IN');
+const today = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => { if(!d) return '—'; const p = d.split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0].slice(2)}` : d; };
+
+async function sha256(txt){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function randSalt(){ const a = new Uint8Array(16); crypto.getRandomValues(a); return [...a].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+
+let AUTH = null;
+let DATA = { orders:[], income:[], expenses:[], purchases:[] };
+let dirtyTimer = null;
+function save(){ clearTimeout(dirtyTimer); dirtyTimer = setTimeout(()=>DB.set(K_DATA, DATA), 120); }
+
+/* ================= GATE ================= */
+(async function boot(){
+  AUTH = await DB.get(K_AUTH);
+  AUTH ? showLogin() : showSetup();
+})();
+
+function gateMsg(t, ok){ const m = $('gateMsg'); m.textContent = t; m.className = 'msg ' + (ok ? 'ok' : 'err'); }
+
+function showSetup(){
+  $('gateTitle').textContent = 'Welcome to Chiccrochet';
+  $('gateSub').textContent = 'Pehli baar hai. Apna User ID aur Password set kar lijiye. Yahi se har baar login hoga.';
+  $('gateForm').innerHTML = `
+    <div class="field"><label>Create User ID</label><input id="s_id" placeholder="e.g. chiccrochet" autocomplete="username"></div>
+    <div class="field"><label>Create Password</label><input type="password" id="s_pw" placeholder="Minimum 6 characters" autocomplete="new-password"></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="s_pw2" placeholder="Repeat password" autocomplete="new-password"></div>
+    <div class="field"><label>Security Question Answer</label><input id="s_hint" placeholder="Aapke pehle bag ka colour?"><p class="hint" style="margin-top:6px">Password bhool jaayein to isse reset kar sakti hain.</p></div>
+    <button class="btn full" onclick="doSetup()">Create Account &amp; Start</button>`;
+  $('gateHint').textContent = 'Ye ID password aapke device par safe rehta hai. Kisi server par nahi jata.';
+  $('s_pw2') && null;
+  setTimeout(()=>$('s_id').focus(),100);
+  enterKey(['s_id','s_pw','s_pw2','s_hint'], doSetup);
+}
+
+function showLogin(){
+  $('gateTitle').textContent = 'Welcome back';
+  $('gateSub').textContent = 'Apni ID aur password daaliye.';
+  $('gateForm').innerHTML = `
+    <div class="field"><label>User ID</label><input id="l_id" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input type="password" id="l_pw" autocomplete="current-password"></div>
+    <button class="btn full" onclick="doLogin()">Login</button>
+    <button class="btn ghost full" style="margin-top:10px" onclick="showForgot()">Password bhool gaye?</button>`;
+  $('gateHint').textContent = '';
+  setTimeout(()=>$('l_id').focus(),100);
+  enterKey(['l_id','l_pw'], doLogin);
+}
+
+function showForgot(){
+  $('gateTitle').textContent = 'Reset Password';
+  $('gateSub').textContent = 'Security question ka answer daaliye.';
+  $('gateForm').innerHTML = `
+    <div class="field"><label>Security Answer</label><input id="r_hint"></div>
+    <div class="field"><label>New Password</label><input type="password" id="r_pw" placeholder="Minimum 6 characters"></div>
+    <button class="btn full" onclick="doReset()">Reset &amp; Login</button>
+    <button class="btn ghost full" style="margin-top:10px" onclick="showLogin()">Back to login</button>`;
+  enterKey(['r_hint','r_pw'], doReset);
+}
+
+function enterKey(ids, fn){ ids.forEach(i => { const el = $(i); if(el) el.addEventListener('keydown', e => { if(e.key === 'Enter') fn(); }); }); }
+
+async function doSetup(){
+  const id = $('s_id').value.trim(), pw = $('s_pw').value, pw2 = $('s_pw2').value, hint = $('s_hint').value.trim();
+  if(id.length < 3) return gateMsg('User ID kam se kam 3 characters ka rakhiye.');
+  if(pw.length < 6) return gateMsg('Password kam se kam 6 characters ka rakhiye.');
+  if(pw !== pw2) return gateMsg('Dono password match nahi ho rahe.');
+  if(!hint) return gateMsg('Security answer zaroori hai.');
+  const salt = randSalt();
+  AUTH = { id, salt, hash: await sha256(salt + pw), hint: await sha256(salt + hint.toLowerCase()), created: today() };
+  await DB.set(K_AUTH, AUTH);
+  await DB.set(K_DATA, DATA);
+  gateMsg('Account ban gaya. Opening…', true);
+  setTimeout(startApp, 500);
+}
+
+async function doLogin(){
+  const id = $('l_id').value.trim(), pw = $('l_pw').value;
+  if(id.toLowerCase() !== AUTH.id.toLowerCase()) return gateMsg('User ID ya password galat hai.');
+  if(await sha256(AUTH.salt + pw) !== AUTH.hash) return gateMsg('User ID ya password galat hai.');
+  startApp();
+}
+
+async function doReset(){
+  const ans = $('r_hint').value.trim().toLowerCase(), pw = $('r_pw').value;
+  if(await sha256(AUTH.salt + ans) !== AUTH.hint) return gateMsg('Security answer galat hai.');
+  if(pw.length < 6) return gateMsg('Password kam se kam 6 characters ka rakhiye.');
+  AUTH.hash = await sha256(AUTH.salt + pw);
+  await DB.set(K_AUTH, AUTH);
+  gateMsg('Password reset ho gaya. Opening…', true);
+  setTimeout(startApp, 500);
+}
+
+async function startApp(){
+  const d = await DB.get(K_DATA);
+  if(d) DATA = Object.assign({orders:[],income:[],expenses:[],purchases:[]}, d);
+  $('gate').style.display = 'none';
+  $('app').style.display = 'block';
+  $('whoAmI').textContent = AUTH.id;
+  buildTabs();
+  ['o_date','i_date','p_date','e_date'].forEach(i => { if($(i)) $(i).value = today(); });
+  renderAll();
+}
+function logout(){ location.reload(); }
+
+/* ================= TABS ================= */
+const TABS = [['dash','Business Amount'],['orders','Customer Records'],['income','Income Records'],['purchase','Raw Material Purchase'],['expense','Expense Records']];
+function buildTabs(){
+  $('tabs').innerHTML = TABS.map(([k,l],i)=>`<button class="${i===0?'active':''}" data-k="${k}" onclick="go('${k}',this)">${l}</button>`).join('');
+}
+function go(k, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('page-'+k).classList.add('active');
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleForm(id, btn){
+  const el = $(id), hidden = el.style.display === 'none';
+  el.style.display = hidden ? 'block' : 'none';
+  btn.textContent = hidden ? 'Hide' : 'Show';
+}
+
+/* ================= TOTALS (auto calculation) ================= */
+function totals(){
+  const orders = DATA.orders.filter(o => o.status !== 'Cancelled');
+  const salesValue = orders.reduce((s,o)=>s+num(o.price),0);
+  const orderReceived = DATA.income.filter(i=>i.type==='Order').reduce((s,i)=>s+num(i.amount),0);
+  const otherIncome = DATA.income.filter(i=>i.type!=='Order').reduce((s,i)=>s+num(i.amount),0);
+  const totalIncome = orderReceived + otherIncome;
+  const purchase = DATA.purchases.reduce((s,p)=>s+num(p.amount),0);
+  const expense = DATA.expenses.reduce((s,e)=>s+num(e.amount),0);
+  const pending = orders.reduce((s,o)=>s + Math.max(0, num(o.price) - received(o.id)), 0);
+  return {
+    salesValue, orderReceived, otherIncome, totalIncome, purchase, expense, pending,
+    outflow: purchase + expense,
+    balance: totalIncome - purchase - expense,
+    profit: salesValue + otherIncome - purchase - expense,
+    orders
+  };
+}
+function received(orderId){ return DATA.income.filter(i=>i.orderId===orderId).reduce((s,i)=>s+num(i.amount),0); }
+
+/* ================= RENDER ================= */
+function renderAll(){ renderDash(); renderOrders(); renderIncome(); renderPurchase(); renderExpense(); fillExpCats(); }
+
+function renderDash(){
+  const t = totals();
+  $('dashStats').innerHTML = `
+    <div class="stat hero"><div class="k">Business Balance (Cash in Hand)</div><div class="v">${money(t.balance)}</div><div class="n">Income minus purchase &amp; expense</div></div>
+    <div class="stat"><div class="k">Total Income</div><div class="v">${money(t.totalIncome)}</div><div class="n">${DATA.income.length} entries</div></div>
+    <div class="stat out"><div class="k">Raw Material Purchase</div><div class="v">${money(t.purchase)}</div><div class="n">${DATA.purchases.length} entries</div></div>
+    <div class="stat out"><div class="k">Other Expenses</div><div class="v">${money(t.expense)}</div><div class="n">${DATA.expenses.length} entries</div></div>
+    <div class="stat pend"><div class="k">Pending From Customers</div><div class="v">${money(t.pending)}</div><div class="n">Baaki wasooli</div></div>
+    <div class="stat"><div class="k">Net Profit</div><div class="v">${money(t.profit)}</div><div class="n">Full order value basis</div></div>`;
+
+  const inflow = t.totalIncome || 1;
+  $('flowList').innerHTML = `
+    <li><span>Total Sales Value (all orders)</span><b>${money(t.salesValue)}</b></li>
+    <li><span>Received from customers</span><b>${money(t.orderReceived)}</b></li>
+    <li><span>Other income</span><b>${money(t.otherIncome)}</b></li>
+    <li><span>Raw material purchase</span><b style="color:var(--danger)">− ${money(t.purchase)}</b></li>
+    <li><span>Other expenses</span><b style="color:var(--danger)">− ${money(t.expense)}</b></li>
+    <li style="border-top:2px solid var(--line);padding-top:12px"><span><b>Business Balance</b></span><b style="font-size:17px;color:var(--green-800)">${money(t.balance)}</b></li>
+    <li style="display:block"><span style="font-size:12.5px;color:var(--muted)">Kharcha vs kamai: ${Math.round(t.outflow/inflow*100)}% of income spent</span>
+      <div class="bar"><i style="width:${Math.min(100, t.outflow/inflow*100)}%"></i></div></li>`;
+
+  const c = s => DATA.orders.filter(o=>o.status===s).length;
+  $('orderSnap').innerHTML = `
+    <li><span>Total orders</span><b>${DATA.orders.length}</b></li>
+    <li><span>Pending</span><b>${c('Pending')}</b></li>
+    <li><span>In Progress</span><b>${c('In Progress')}</b></li>
+    <li><span>Delivered</span><b>${c('Delivered')}</b></li>
+    <li><span>Cancelled</span><b>${c('Cancelled')}</b></li>
+    <li><span>Average order value</span><b>${money(t.orders.length ? t.salesValue/t.orders.length : 0)}</b></li>`;
+
+  const acts = [
+    ...DATA.income.map(i=>({d:i.date,t:'Income',x:(i.type==='Order'?'Payment · '+(i.from||''):i.from||'Other income'),a:num(i.amount),p:1})),
+    ...DATA.purchases.map(p=>({d:p.date,t:'Purchase',x:`${p.item||'Material'} · ${p.supplier||''}`,a:-num(p.amount),p:0})),
+    ...DATA.expenses.map(e=>({d:e.date,t:'Expense',x:`${e.cat} · ${e.desc||''}`,a:-num(e.amount),p:0}))
+  ].sort((a,b)=> (b.d||'').localeCompare(a.d||'')).slice(0,12);
+
+  $('recentBody').innerHTML = acts.length ? acts.map(a=>`<tr>
+    <td>${fmtDate(a.d)}</td><td><span class="pill tag">${a.t}</span></td><td>${esc(a.x)}</td>
+    <td class="num" style="color:${a.p?'var(--green-800)':'var(--danger)'};font-weight:700">${a.p?'+':'−'} ${money(Math.abs(a.a))}</td></tr>`).join('')
+    : `<tr><td colspan="4"><div class="empty"><b>Abhi koi entry nahi</b>Pehla order ya purchase add kariye.</div></td></tr>`;
+}
+
+/* ---- ORDERS ---- */
+function addOrder(){
+  const name = $('o_name').value.trim();
+  if(!name) return alert('Customer ka naam daaliye.');
+  const price = num($('o_price').value), adv = num($('o_adv').value);
+  if(adv > price && price > 0) return alert('Advance price se zyada nahi ho sakta.');
+  const o = {
+    id: uid(), date: $('o_date').value || today(), name,
+    contact: $('o_contact').value.trim(), address: $('o_address').value.trim(),
+    product: $('o_product').value.trim(), material: $('o_material').value,
+    colour: $('o_colour').value.trim(), size: $('o_size').value.trim(),
+    occasion: $('o_occasion').value, custom: $('o_customflag').value,
+    notes: $('o_notes').value.trim(), range: $('o_range').value.trim(),
+    price, ddate: $('o_ddate').value, status: $('o_status').value
+  };
+  DATA.orders.unshift(o);
+  if(adv > 0) DATA.income.unshift({ id:uid(), date:o.date, from:name, amount:adv, mode:'Cash', note:'Advance', type:'Order', orderId:o.id });
+  save(); clearOrderForm(); renderAll();
+}
+function clearOrderForm(){
+  ['o_name','o_contact','o_address','o_product','o_colour','o_size','o_notes','o_range','o_price','o_adv','o_ddate'].forEach(i=>$(i).value='');
+  $('o_date').value = today(); $('o_status').value='Pending'; $('o_customflag').value='No';
+}
+function renderOrders(){
+  const q = ($('f_order').value||'').toLowerCase(), st = $('f_ostatus').value;
+  const list = DATA.orders.filter(o=>{
+    if(st && o.status !== st) return false;
+    if(!q) return true;
+    return [o.name,o.contact,o.colour,o.product,o.occasion,o.size,o.material,o.notes].join(' ').toLowerCase().includes(q);
+  });
+  $('ordersBody').innerHTML = list.length ? list.map(o=>{
+    const rec = received(o.id), bal = num(o.price) - rec;
+    const cls = {'Pending':'pending','In Progress':'progress','Delivered':'done','Cancelled':'cancel'}[o.status];
+    return `<tr>
+      <td>${fmtDate(o.date)}${o.ddate?`<div class="sub-line">Del: ${fmtDate(o.ddate)}</div>`:''}</td>
+      <td><b>${esc(o.name)}</b><div class="sub-line">${esc(o.contact)}${o.address?'<br>'+esc(o.address):''}</div></td>
+      <td>${esc(o.product||'—')}
+        <div class="sub-line">${esc(o.material)} · ${esc(o.colour||'—')} · ${esc(o.size||'—')}<br>${esc(o.occasion)}${o.custom==='Yes'?' · <b>Custom</b>':''}${o.range?'<br>Range: '+esc(o.range):''}${o.notes?'<br>'+esc(o.notes):''}</div></td>
+      <td><span class="pill ${cls}">${o.status}</span></td>
+      <td class="num">${money(o.price)}</td>
+      <td class="num" style="color:var(--green-800)">${money(rec)}</td>
+      <td class="num" style="color:${bal>0?'var(--warn)':'var(--muted)'};font-weight:${bal>0?700:400}">${money(bal)}</td>
+      <td><div class="act">
+        ${bal>0 && o.status!=='Cancelled' ? `<button class="link-btn" onclick="payModal('${o.id}')">+ Payment</button>`:''}
+        <button class="link-btn" onclick="cycleStatus('${o.id}')">Status</button>
+        <button class="link-btn del" onclick="delOrder('${o.id}')">Delete</button></div></td></tr>`;
+  }).join('') : `<tr><td colspan="8"><div class="empty"><b>Koi order nahi mila</b>Upar form se naya order add kariye.</div></td></tr>`;
+}
+function cycleStatus(id){
+  const o = DATA.orders.find(x=>x.id===id); if(!o) return;
+  const s = ['Pending','In Progress','Delivered','Cancelled'];
+  o.status = s[(s.indexOf(o.status)+1) % s.length];
+  save(); renderAll();
+}
+function delOrder(id){
+  const o = DATA.orders.find(x=>x.id===id);
+  if(!confirm(`"${o.name}" ka order aur uske saare payments delete karein?`)) return;
+  DATA.orders = DATA.orders.filter(x=>x.id!==id);
+  DATA.income = DATA.income.filter(i=>i.orderId!==id);
+  save(); renderAll();
+}
+function payModal(id){
+  const o = DATA.orders.find(x=>x.id===id); const bal = num(o.price) - received(o.id);
+  openModal(`<h3>Payment Received</h3><p class="sub">${esc(o.name)} · Balance ${money(bal)}</p>
+    <div class="field"><label>Amount (₹)</label><input type="number" id="m_amt" value="${bal}"></div>
+    <div class="field"><label>Mode</label><select id="m_mode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Other</option></select></div>
+    <div class="field"><label>Date</label><input type="date" id="m_date" value="${today()}"></div>
+    <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="savePay('${id}')">Save</button>
+    <button class="btn ghost" onclick="closeModal()">Cancel</button></div>`);
+  setTimeout(()=>$('m_amt').select(),80);
+}
+function savePay(id){
+  const o = DATA.orders.find(x=>x.id===id), amt = num($('m_amt').value);
+  if(amt <= 0) return alert('Sahi amount daaliye.');
+  DATA.income.unshift({ id:uid(), date:$('m_date').value||today(), from:o.name, amount:amt, mode:$('m_mode').value, note:'Order payment', type:'Order', orderId:id });
+  closeModal(); save(); renderAll();
+}
+
+/* ---- INCOME ---- */
+function addIncome(){
+  const amt = num($('i_amt').value);
+  if(amt <= 0) return alert('Amount daaliye.');
+  DATA.income.unshift({ id:uid(), date:$('i_date').value||today(), from:$('i_from').value.trim()||'Other', amount:amt, mode:$('i_mode').value, note:$('i_note').value.trim(), type:'Other', orderId:null });
+  ['i_from','i_amt','i_note'].forEach(i=>$(i).value=''); save(); renderAll();
+}
+function renderIncome(){
+  const q = ($('f_inc').value||'').toLowerCase();
+  const list = DATA.income.filter(i => !q || [i.from,i.note,i.mode,i.type].join(' ').toLowerCase().includes(q));
+  $('incomeBody').innerHTML = list.length ? list.map(i=>`<tr>
+    <td>${fmtDate(i.date)}</td>
+    <td><b>${esc(i.from)}</b>${i.note?`<div class="sub-line">${esc(i.note)}</div>`:''}</td>
+    <td><span class="pill ${i.type==='Order'?'progress':'tag'}">${i.type==='Order'?'Order Payment':'Other'}</span></td>
+    <td>${esc(i.mode)}</td>
+    <td class="num" style="color:var(--green-800);font-weight:700">+ ${money(i.amount)}</td>
+    <td><div class="act"><button class="link-btn del" onclick="delRec('income','${i.id}')">Delete</button></div></td></tr>`).join('')
+    : `<tr><td colspan="6"><div class="empty"><b>Koi income entry nahi</b>Order ka advance ya payment yahan apne aap dikhega.</div></td></tr>`;
+}
+
+/* ---- PURCHASE ---- */
+function addPurchase(){
+  const amt = num($('p_amt').value);
+  if(amt <= 0) return alert('Amount daaliye.');
+  DATA.purchases.unshift({ id:uid(), date:$('p_date').value||today(), item:$('p_item').value.trim()||'Material',
+    material:$('p_material').value, colour:$('p_colour').value.trim(), qty:$('p_qty').value,
+    unit:$('p_unit').value, supplier:$('p_supplier').value.trim(), amount:amt, mode:$('p_mode').value });
+  ['p_item','p_colour','p_qty','p_supplier','p_amt'].forEach(i=>$(i).value=''); save(); renderAll();
+}
+function renderPurchase(){
+  const q = ($('f_pur').value||'').toLowerCase();
+  const list = DATA.purchases.filter(p => !q || [p.item,p.supplier,p.colour,p.material].join(' ').toLowerCase().includes(q));
+  $('purchaseBody').innerHTML = list.length ? list.map(p=>`<tr>
+    <td>${fmtDate(p.date)}</td><td><b>${esc(p.item)}</b></td>
+    <td><span class="pill tag">${esc(p.material)}</span>${p.colour?`<div class="sub-line">${esc(p.colour)}</div>`:''}</td>
+    <td class="num">${p.qty?esc(p.qty)+' '+esc(p.unit):'—'}</td>
+    <td>${esc(p.supplier||'—')}<div class="sub-line">${esc(p.mode)}</div></td>
+    <td class="num" style="color:var(--danger);font-weight:700">− ${money(p.amount)}</td>
+    <td><div class="act"><button class="link-btn del" onclick="delRec('purchases','${p.id}')">Delete</button></div></td></tr>`).join('')
+    : `<tr><td colspan="7"><div class="empty"><b>Koi purchase nahi</b>Yarn ya accessories ka bill yahan add kariye.</div></td></tr>`;
+}
+
+/* ---- EXPENSE ---- */
+function addExpense(){
+  const amt = num($('e_amt').value);
+  if(amt <= 0) return alert('Amount daaliye.');
+  DATA.expenses.unshift({ id:uid(), date:$('e_date').value||today(), cat:$('e_cat').value, desc:$('e_desc').value.trim(), amount:amt, mode:$('e_mode').value });
+  ['e_desc','e_amt'].forEach(i=>$(i).value=''); save(); renderAll();
+}
+function fillExpCats(){
+  const cats = [...new Set(DATA.expenses.map(e=>e.cat))].sort();
+  const sel = $('f_ecat'), cur = sel.value;
+  sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  sel.value = cur;
+}
+function renderExpense(){
+  const q = ($('f_exp').value||'').toLowerCase(), cat = $('f_ecat').value;
+  const list = DATA.expenses.filter(e => (!cat || e.cat===cat) && (!q || [e.cat,e.desc,e.mode].join(' ').toLowerCase().includes(q)));
+  $('expenseBody').innerHTML = list.length ? list.map(e=>`<tr>
+    <td>${fmtDate(e.date)}</td><td><span class="pill tag">${esc(e.cat)}</span></td>
+    <td>${esc(e.desc||'—')}</td><td>${esc(e.mode)}</td>
+    <td class="num" style="color:var(--danger);font-weight:700">− ${money(e.amount)}</td>
+    <td><div class="act"><button class="link-btn del" onclick="delRec('expenses','${e.id}')">Delete</button></div></td></tr>`).join('')
+    : `<tr><td colspan="6"><div class="empty"><b>Koi expense nahi</b>Courier, packaging, ads ka kharcha yahan likhiye.</div></td></tr>`;
+}
+
+function delRec(coll, id){
+  if(!confirm('Ye entry delete karein?')) return;
+  DATA[coll] = DATA[coll].filter(x=>x.id!==id); save(); renderAll();
+}
+
+/* ================= MODAL ================= */
+function openModal(html){ $('modalCard').innerHTML = html; $('modal').classList.add('on'); }
+function closeModal(){ $('modal').classList.remove('on'); }
+$('modal').addEventListener('click', e => { if(e.target.id === 'modal') closeModal(); });
+
+function openChangePw(){
+  openModal(`<h3>Change Password</h3><p class="sub">Purana password daal ke naya set kijiye.</p>
+    <div class="field"><label>Current Password</label><input type="password" id="c_old"></div>
+    <div class="field"><label>New Password</label><input type="password" id="c_new" placeholder="Minimum 6 characters"></div>
+    <div class="msg" id="c_msg"></div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn" style="flex:1" onclick="doChangePw()">Update</button>
+    <button class="btn ghost" onclick="closeModal()">Cancel</button></div>`);
+}
+async function doChangePw(){
+  const m = $('c_msg');
+  if(await sha256(AUTH.salt + $('c_old').value) !== AUTH.hash){ m.className='msg err'; m.textContent='Current password galat hai.'; return; }
+  if($('c_new').value.length < 6){ m.className='msg err'; m.textContent='Naya password chhota hai.'; return; }
+  AUTH.hash = await sha256(AUTH.salt + $('c_new').value);
+  await DB.set(K_AUTH, AUTH);
+  m.className='msg ok'; m.textContent='Password update ho gaya.';
+  setTimeout(closeModal, 900);
+}
+
+function openBackup(){
+  openModal(`<h3>Backup &amp; Restore</h3><p class="sub">Poora data ek JSON file me download kar lijiye. Phone/laptop badalne par usi file se restore ho jayega.</p>
+    <button class="btn full" onclick="downloadBackup()">Download Backup File</button>
+    <div class="field" style="margin-top:18px"><label>Restore from file</label><input type="file" id="restoreFile" accept=".json"></div>
+    <button class="btn ghost full" onclick="doRestore()">Restore Data</button>
+    <div class="msg" id="b_msg"></div>
+    <button class="btn ghost full" style="margin-top:14px" onclick="closeModal()">Close</button>`);
+}
+function downloadBackup(){
+  dl(JSON.stringify({ app:'chiccrochet', exported:new Date().toISOString(), data:DATA }, null, 2),
+     `chiccrochet-backup-${today()}.json`, 'application/json');
+}
+function doRestore(){
+  const f = $('restoreFile').files[0], m = $('b_msg');
+  if(!f){ m.className='msg err'; m.textContent='Pehle file choose kijiye.'; return; }
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const j = JSON.parse(r.result), d = j.data || j;
+      if(!d.orders && !d.income) throw 0;
+      if(!confirm('Abhi ka saara data replace ho jayega. Continue?')) return;
+      DATA = Object.assign({orders:[],income:[],expenses:[],purchases:[]}, d);
+      save(); renderAll(); m.className='msg ok'; m.textContent='Data restore ho gaya.';
+      setTimeout(closeModal, 900);
+    }catch(e){ m.className='msg err'; m.textContent='File sahi nahi hai.'; }
+  };
+  r.readAsText(f);
+}
+
+/* ================= CSV EXPORT ================= */
+const CSV_MAP = {
+  orders:  ['date','name','contact','address','product','material','colour','size','occasion','custom','notes','range','price','ddate','status'],
+  income:  ['date','from','type','mode','note','amount'],
+  purchases:['date','item','material','colour','qty','unit','supplier','mode','amount'],
+  expenses:['date','cat','desc','mode','amount']
+};
+function exportCSV(coll){
+  const cols = CSV_MAP[coll], rows = DATA[coll];
+  if(!rows.length) return alert('Export karne ke liye koi record nahi hai.');
+  const q = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  let csv = cols.map(q).join(',') + '\n';
+  rows.forEach(r => { csv += cols.map(c => q(coll==='orders' && c==='price' ? r.price : r[c])).join(',') + '\n'; });
+  if(coll === 'orders'){
+    csv = cols.concat(['received','balance']).map(q).join(',') + '\n';
+    rows.forEach(r => { const rec = received(r.id);
+      csv += cols.map(c=>q(r[c])).concat([q(rec), q(num(r.price)-rec)]).join(',') + '\n'; });
+  }
+  dl('\ufeff'+csv, `chiccrochet-${coll}-${today()}.csv`, 'text/csv;charset=utf-8');
+}
+function dl(content, name, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+</script>
